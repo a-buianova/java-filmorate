@@ -11,7 +11,8 @@ public final class UserValidator {
     private static final String MSG_SPACE_LOGIN  = "login must not contain spaces";
     private static final String MSG_FUTURE_BIRTH = "birthday must not be in the future";
 
-    private UserValidator() { }
+    private UserValidator() {
+    }
 
     public static void validate(User user) {
 
