@@ -27,8 +27,7 @@ public final class UserValidator {
             throw new ValidationException(MSG_SPACE_LOGIN);
         }
 
-        if (user.getBirthday() != null &&
-                user.getBirthday().isAfter(LocalDate.now())) {
+        if (user.getBirthday() != null && user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException(MSG_FUTURE_BIRTH);
         }
 
