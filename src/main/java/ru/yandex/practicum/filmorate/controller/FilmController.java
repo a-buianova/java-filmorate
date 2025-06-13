@@ -2,13 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -25,19 +23,14 @@ public class FilmController {
     private final AtomicLong idGenerator = new AtomicLong();
 
     @PostMapping
-    public ResponseEntity<Film> addFilm(@Valid @RequestBody Film film) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film addFilm(@Valid @RequestBody Film film) {
         long id = idGenerator.incrementAndGet();
         film.setId(id);
         films.put(id, film);
 
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(id)
-                .toUri();
-
         log.info("POST /films → 201, id={}", id);
-        return ResponseEntity.created(location).body(film);
+        return film;
     }
 
     @PutMapping

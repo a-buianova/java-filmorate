@@ -9,9 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 
-import static org.hamcrest.Matchers.endsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(FilmController.class)
 class FilmControllerTest {
@@ -23,7 +23,7 @@ class FilmControllerTest {
     ObjectMapper mapper;
 
     @Test
-    @DisplayName("POST /films — happy-path 201 + абсолютный Location-header")
+    @DisplayName("POST /films — happy-path 201")
     void createFilm201() throws Exception {
         var body = mapper.createObjectNode()
                 .put("name", "Matrix")
@@ -34,8 +34,7 @@ class FilmControllerTest {
         mvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body.toString()))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", endsWith("/films/1")));
+                .andExpect(status().isCreated());
     }
 
     @Test

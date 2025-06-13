@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -18,7 +20,6 @@ public class Film implements Serializable {
     @Size(max = 200, message = "description must be ≤ 200 symbols")
     private String description;
 
-    @NotNull(message = "releaseDate is required")
     @JsonFormat(pattern = "yyyy-MM-dd")
     @FilmReleaseDate
     private LocalDate releaseDate;

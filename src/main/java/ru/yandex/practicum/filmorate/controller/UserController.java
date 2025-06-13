@@ -44,21 +44,36 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@Valid @RequestBody User user) {
+    public User update(@RequestBody User user) {
         Integer id = user.getId();
         if (id == null) {
             throw new NotFoundException("User ID is required");
         }
-
-        User updated = users.computeIfPresent(id, (k, v) -> {
-            UserValidator.validate(user);
-            return user;
-        });
-
-        if (updated == null) {
+        if (!users.containsKey(id)) {
             log.warn("PUT /users → 404, id={} not found", id);
             throw new NotFoundException("User ID not found");
         }
+
+        User.UserBuilder userBuilder = users.get(id).toBuilder();
+
+        if (user.getEmail() != null) {
+            userBuilder.email(user.getEmail());
+        }
+        if (user.getLogin() != null) {
+            userBuilder.login(user.getLogin().trim());
+        }
+        if (user.getName() != null) {
+            userBuilder.name(user.getName());
+        }
+        if (user.getBirthday() != null) {
+            userBuilder.birthday(user.getBirthday());
+        }
+
+        User updated = userBuilder.build();
+        UserValidator.validate(updated);
+        users.put(id, updated);
+
+
 
         log.info("PUT /users → 200, id={}", id);
         return updated;
