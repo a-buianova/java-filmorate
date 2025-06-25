@@ -21,65 +21,74 @@ class FilmValidationTest {
     }
 
     @Test
-    @DisplayName("releaseDate раньше 1895-12-28 не проходит")
+    @DisplayName("Дата релиза раньше 1895-12-28 не проходит валидацию")
     void earlyReleaseDateFails() {
-        Film f = validFilm();
-        f.setReleaseDate(LocalDate.of(1895, 12, 27));
-
-        assertThat(validator.validate(f)).isNotEmpty();
+        Film film = validFilm();
+        film.setReleaseDate(LocalDate.of(1895, 12, 27));
+        assertThat(validator.validate(film)).isNotEmpty();
     }
 
     @Test
-    @DisplayName("releaseDate null не проходит (@FilmReleaseDate)")
+    @DisplayName("Дата релиза null — не проходит валидацию")
     void nullReleaseDateFails() {
-        Film f = validFilm();
-        f.setReleaseDate(null);
-
-        assertThat(validator.validate(f)).isNotEmpty();
+        Film film = validFilm();
+        film.setReleaseDate(null);
+        assertThat(validator.validate(film)).isNotEmpty();
     }
 
     @Test
-    @DisplayName("duration ≤ 0 не проходит")
-    void nonPositiveDurationFails() {
-        Film f = validFilm();
-        f.setDuration(0);
-
-        assertThat(validator.validate(f)).isNotEmpty();
-    }
-
-    @Test
-    @DisplayName("description 200 символов проходит")
-    void description200Ok() {
-        Film f = validFilm();
-        f.setDescription("a".repeat(200));
-
-        assertThat(validator.validate(f)).isEmpty();
-    }
-
-    @Test
-    @DisplayName("description 201 символ не проходит")
-    void description201Fails() {
-        Film f = validFilm();
-        f.setDescription("a".repeat(201));
-
-        assertThat(validator.validate(f)).isNotEmpty();
-    }
-
-    @Test
-    @DisplayName("пустое name не проходит")
+    @DisplayName("Название пустое — не проходит валидацию")
     void blankNameFails() {
-        Film f = validFilm();
-        f.setName(" ");
+        Film film = validFilm();
+        film.setName(" ");
+        assertThat(validator.validate(film)).isNotEmpty();
+    }
 
-        assertThat(validator.validate(f)).isNotEmpty();
+    @Test
+    @DisplayName("Название null — не проходит валидацию")
+    void nullNameFails() {
+        Film film = validFilm();
+        film.setName(null);
+        assertThat(validator.validate(film)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Описание длиной 200 символов проходит валидацию")
+    void description200Ok() {
+        Film film = validFilm();
+        film.setDescription("a".repeat(200));
+        assertThat(validator.validate(film)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Описание длиной 201 символ не проходит валидацию")
+    void description201Fails() {
+        Film film = validFilm();
+        film.setDescription("a".repeat(201));
+        assertThat(validator.validate(film)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Продолжительность ≤ 0 — не проходит валидацию")
+    void nonPositiveDurationFails() {
+        Film film = validFilm();
+        film.setDuration(0);
+        assertThat(validator.validate(film)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Корректный фильм проходит валидацию")
+    void validFilmOk() {
+        Film film = validFilm();
+        assertThat(validator.validate(film)).isEmpty();
     }
 
     private Film validFilm() {
-        Film f = new Film();
-        f.setName("Matrix");
-        f.setDescription("Neo chooses pill");
-        f.setDuration(136);
-        f.setReleaseDate(LocalDate.of(1999, 3, 31));
-        return f;
+        Film film = new Film();
+        film.setName("Matrix");
+        film.setDescription("Neo chooses pill");
+        film.setReleaseDate(LocalDate.of(1999, 3, 31));
+        film.setDuration(136);
+        return film;
     }
 }

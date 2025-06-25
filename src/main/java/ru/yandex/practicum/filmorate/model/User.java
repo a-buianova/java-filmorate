@@ -5,33 +5,30 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
-@Builder(toBuilder = true)
-@AllArgsConstructor
-@NoArgsConstructor
-public class User implements Serializable {
+public class User {
 
-    private Integer id;
+    private Long id;
 
-    @Email(message = "email must contain @")
-    @NotBlank(message = "email must not be empty")
+    @Email(message = "Некорректный email")
+    @NotBlank(message = "Email не может быть пустым")
     private String email;
 
-    @NotBlank(message = "login must not be empty")
-    @Pattern(regexp = "^\\S+$", message = "login must not contain spaces")
+    @NotBlank(message = "Логин не может быть пустым")
+    @Pattern(regexp = "^\\S+$", message = "Логин не должен содержать пробелы")
     private String login;
 
     private String name;
 
-    @PastOrPresent(message = "birthday must not be in the future")
+    @PastOrPresent(message = "Дата рождения не может быть в будущем")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthday;
+
+    private Set<Long> friends = new HashSet<>();
 }

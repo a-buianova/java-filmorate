@@ -2,97 +2,63 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validator.UserValidator;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.net.URI;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
 
-    private final Map<Integer, User> users = new ConcurrentHashMap<>();
+    private final UserService userService;
 
-    private final AtomicInteger idGenerator = new AtomicInteger();
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        UserValidator.validate(user);
-
-        int id = idGenerator.incrementAndGet();
-        user.setId(id);
-        users.put(id, user);
-
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(id)
-                .toUri();
-
-        log.info("POST /users → 201, id={}", id);
-        return ResponseEntity.created(location).body(user);
+    @ResponseStatus(HttpStatus.CREATED)
+    public User addUser(@Valid @RequestBody User user) {
+        return userService.add(user);
     }
 
     @PutMapping
-    public User update(@RequestBody User user) {
-        Integer id = user.getId();
-        if (id == null) {
-            throw new NotFoundException("User ID is required");
-        }
-        if (!users.containsKey(id)) {
-            log.warn("PUT /users → 404, id={} not found", id);
-            throw new NotFoundException("User ID not found");
-        }
-
-        User.UserBuilder userBuilder = users.get(id).toBuilder();
-
-        if (user.getEmail() != null) {
-            userBuilder.email(user.getEmail());
-        }
-        if (user.getLogin() != null) {
-            userBuilder.login(user.getLogin().trim());
-        }
-        if (user.getName() != null) {
-            userBuilder.name(user.getName());
-        }
-        if (user.getBirthday() != null) {
-            userBuilder.birthday(user.getBirthday());
-        }
-
-        User updated = userBuilder.build();
-        UserValidator.validate(updated);
-        users.put(id, updated);
-
-
-
-        log.info("PUT /users → 200, id={}", id);
-        return updated;
+    public User updateUser(@Valid @RequestBody User user) {
+        return userService.update(user);
     }
 
     @GetMapping
     public List<User> getAll() {
-        return users.values().stream()
-                .sorted(Comparator.comparingInt(User::getId))
-                .toList();
+        return userService.findAll();
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable int id) {
-        User user = users.get(id);
-        if (user == null) {
-            log.warn("GET /users/{} → 404", id);
-            throw new NotFoundException("User ID not found");
-        }
-        return user;
+    public User getById(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+
+    // Друзья
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable Long id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 }
