@@ -6,24 +6,27 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
-public class Film implements Serializable {
+public class Film {
 
     private Long id;
 
-    @NotBlank(message = "name must not be empty")
+    @NotBlank(message = "Название фильма не может быть пустым")
     private String name;
 
-    @Size(max = 200, message = "description must be ≤ 200 symbols")
+    @Size(max = 200, message = "Описание фильма не должно превышать 200 символов")
     private String description;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     @FilmReleaseDate
     private LocalDate releaseDate;
 
-    @Positive(message = "duration must be positive")
+    @Positive(message = "Продолжительность фильма должна быть положительной")
     private int duration;
+
+    private Set<Long> likes = new HashSet<>();
 }

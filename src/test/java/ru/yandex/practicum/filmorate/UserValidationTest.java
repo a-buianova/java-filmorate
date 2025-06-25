@@ -3,85 +3,84 @@ package ru.yandex.practicum.filmorate;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validator.UserValidator;
 
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class UserValidationTest {
 
-    private static Validator beanValidator;
+    private static Validator validator;
 
     @BeforeAll
-    static void init() {
-        beanValidator = Validation.buildDefaultValidatorFactory().getValidator();
+    static void setUp() {
+        validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
     @Test
+    @DisplayName("Пустой email не проходит валидацию")
     void nullEmailFails() {
-        User u = validUser();
-        u.setEmail(null);
-
-        assertThat(beanValidator.validate(u)).isNotEmpty();
+        User user = validUser();
+        user.setEmail(null);
+        assertThat(validator.validate(user)).isNotEmpty();
     }
 
     @Test
+    @DisplayName("Пустая строка в email — не проходит валидацию")
+    void emptyEmailFails() {
+        User user = validUser();
+        user.setEmail("");
+        assertThat(validator.validate(user)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Некорректный email (без @) не проходит валидацию")
     void badEmailFails() {
-        User u = validUser();
-        u.setEmail("bad-email");
-
-        assertThat(beanValidator.validate(u)).isNotEmpty();
+        User user = validUser();
+        user.setEmail("bad-email");
+        assertThat(validator.validate(user)).isNotEmpty();
     }
 
     @Test
-    void loginWithSpaceFails() {
-        User u = validUser();
-        u.setLogin("bad login");
-
-        assertThatThrownBy(() -> UserValidator.validate(u))
-                .isInstanceOf(ValidationException.class);
+    @DisplayName("Пустой логин — не проходит валидацию")
+    void blankLoginFails() {
+        User user = validUser();
+        user.setLogin(" ");
+        assertThat(validator.validate(user)).isNotEmpty();
     }
 
     @Test
-    void trimLoginOk() {
-        User u = validUser();
-        u.setLogin("  login  ");
-
-        UserValidator.validate(u);
-
-        assertThat(u.getLogin()).isEqualTo("login");
+    @DisplayName("Логин с пробелами внутри — не проходит валидацию")
+    void loginWithSpacesFails() {
+        User user = validUser();
+        user.setLogin("user name");
+        assertThat(validator.validate(user)).isNotEmpty();
     }
 
     @Test
+    @DisplayName("Дата рождения в будущем — не проходит валидацию")
     void futureBirthdayFails() {
-        User u = validUser();
-        u.setBirthday(LocalDate.now().plusDays(1));
-
-        assertThatThrownBy(() -> UserValidator.validate(u))
-                .isInstanceOf(ValidationException.class);
+        User user = validUser();
+        user.setBirthday(LocalDate.now().plusDays(1));
+        assertThat(validator.validate(user)).isNotEmpty();
     }
 
     @Test
-    void emptyNameReplacedByLogin() {
-        User u = validUser();
-        u.setName("");
-
-        UserValidator.validate(u);
-
-        assertThat(u.getName()).isEqualTo(u.getLogin());
+    @DisplayName("Корректный пользователь проходит валидацию")
+    void validUserOk() {
+        User user = validUser();
+        assertThat(validator.validate(user)).isEmpty();
     }
 
     private User validUser() {
-        User u = new User();
-        u.setEmail("a@b.c");
-        u.setLogin("login");
-        u.setName("name");
-        u.setBirthday(LocalDate.now());
-        return u;
+        User user = new User();
+        user.setEmail("user@mail.com");
+        user.setLogin("username");
+        user.setName("User Name");
+        user.setBirthday(LocalDate.now());
+        return user;
     }
 }
