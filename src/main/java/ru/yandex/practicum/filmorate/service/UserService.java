@@ -19,7 +19,6 @@ public class UserService {
     }
 
     public User add(User user) {
-        // автозаполнение name, если пусто
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -27,7 +26,9 @@ public class UserService {
     }
 
     public User update(User user) {
-        findById(user.getId());
+        if (!userStorage.findById(user.getId()).isPresent()) {
+            throw new NotFoundException("Пользователь с id " + user.getId() + " не найден.");
+        }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -46,15 +47,15 @@ public class UserService {
     public void addFriend(Long userId, Long friendId) {
         User user = findById(userId);
         User friend = findById(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+        user.addFriend(friendId);
+        friend.addFriend(userId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
         User user = findById(userId);
         User friend = findById(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+        user.removeFriend(friendId);
+        friend.removeFriend(userId);
     }
 
     public List<User> getFriends(Long userId) {

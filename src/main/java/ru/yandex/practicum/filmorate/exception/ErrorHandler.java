@@ -52,13 +52,4 @@ public class ErrorHandler {
                 e.getMessage()
         );
     }
-
-    @ExceptionHandler(Throwable.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleAll(Throwable e) {
-        return new ErrorResponse(
-                "Необработанная ошибка.",
-                e.getMessage()
-        );
-    }
 }

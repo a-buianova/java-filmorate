@@ -155,4 +155,20 @@ class UserControllerTest {
         mvc.perform(get("/users/{id}", 9999))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @DisplayName("PUT /users — обновление несуществующего пользователя → 404")
+    void updateUser_notFound_shouldReturn404() throws Exception {
+        var updateBody = mapper.createObjectNode()
+                .put("id", 9999)
+                .put("email", "test@mail.com")
+                .put("login", "testlogin")
+                .put("name", "Test")
+                .put("birthday", "1990-01-01");
+
+        mvc.perform(put("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateBody.toString()))
+                .andExpect(status().isNotFound());
+    }
 }
