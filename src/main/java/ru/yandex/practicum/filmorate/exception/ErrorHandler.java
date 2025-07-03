@@ -15,23 +15,41 @@ public class ErrorHandler {
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleCustom(ValidationException e) {
-        return new ErrorResponse("ValidationException", e.getMessage());
+    public ErrorResponse handleCustomValidation(ValidationException e) {
+        return new ErrorResponse(
+                "Ошибка валидации входных данных.",
+                e.getMessage()
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleHibernate(MethodArgumentNotValidException ex) {
+    public ErrorResponse handleHibernateValidation(MethodArgumentNotValidException ex) {
         List<FieldError> errors = ex.getBindingResult().getFieldErrors();
         String message = errors.stream()
                 .map(f -> f.getField() + " " + f.getDefaultMessage())
                 .collect(Collectors.joining("; "));
-        return new ErrorResponse("ValidationException", message);
+        return new ErrorResponse(
+                "Ошибка валидации входных данных.",
+                message
+        );
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handle404(NotFoundException e) {
-        return new ErrorResponse("NotFoundException", e.getMessage());
+    public ErrorResponse handleNotFound(NotFoundException e) {
+        return new ErrorResponse(
+                "Объект не найден.",
+                e.getMessage()
+        );
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleRuntime(RuntimeException e) {
+        return new ErrorResponse(
+                "Внутренняя ошибка сервера.",
+                e.getMessage()
+        );
     }
 }
