@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
@@ -13,24 +12,22 @@ import java.util.Set;
 
 @Data
 public class User {
-
     private Long id;
 
-    @Email(message = "Некорректный email")
-    @NotBlank(message = "Email не может быть пустым")
+    @Email
+    @NotBlank
     private String email;
 
-    @NotBlank(message = "Логин не может быть пустым")
-    @Pattern(regexp = "^\\S+$", message = "Логин не должен содержать пробелы")
+    @NotBlank
+    @Pattern(regexp = "^\\S+$", message = "Login не должен содержать пробелов")
     private String login;
 
     private String name;
 
-    @PastOrPresent(message = "Дата рождения не может быть в будущем")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @PastOrPresent
     private LocalDate birthday;
 
-    private Set<Long> friends = new HashSet<>();
+    private final Set<Long> friends = new HashSet<>();
 
     public void addFriend(Long friendId) {
         friends.add(friendId);
