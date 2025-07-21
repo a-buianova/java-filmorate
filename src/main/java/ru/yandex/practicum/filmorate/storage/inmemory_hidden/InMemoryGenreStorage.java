@@ -33,4 +33,21 @@ public class InMemoryGenreStorage implements GenreStorage {
     public List<Genre> findGenresByFilmId(Long filmId) {
         return List.of();
     }
+
+    @Override
+    public List<Genre> findAllByIds(Set<Integer> ids) {
+        return ids.stream()
+                .map(genres::get)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Override
+    public Map<Long, List<Genre>> findGenresForFilmIds(List<Long> filmIds) {
+        Map<Long, List<Genre>> result = new HashMap<>();
+        for (Long filmId : filmIds) {
+            result.put(filmId, List.of());
+        }
+        return result;
+    }
 }

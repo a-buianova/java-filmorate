@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -42,11 +43,16 @@ public class FilmDbStorage implements FilmStorage {
 
         film.setId(keyHolder.getKey().longValue());
 
-        if (film.getGenres() != null) {
-            film.getGenres().forEach(genre -> {
-                String sqlGenre = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-                jdbcTemplate.update(sqlGenre, film.getId(), genre.getId());
-            });
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
+                    film.getGenres(),
+                    film.getGenres().size(),
+                    (ps, genre) -> {
+                        ps.setLong(1, film.getId());
+                        ps.setInt(2, genre.getId());
+                    }
+            );
         }
 
         return film;
@@ -65,14 +71,18 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId()
         );
 
-        String sqlDeleteGenres = "DELETE FROM film_genres WHERE film_id = ?";
-        jdbcTemplate.update(sqlDeleteGenres, film.getId());
+        jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
 
-        if (film.getGenres() != null) {
-            film.getGenres().forEach(genre -> {
-                String sqlGenre = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-                jdbcTemplate.update(sqlGenre, film.getId(), genre.getId());
-            });
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
+                    film.getGenres(),
+                    film.getGenres().size(),
+                    (ps, genre) -> {
+                        ps.setLong(1, film.getId());
+                        ps.setInt(2, genre.getId());
+                    }
+            );
         }
 
         return film;
@@ -92,8 +102,11 @@ public class FilmDbStorage implements FilmStorage {
                 null
         ));
 
-        // добавим жанры
-        films.forEach(film -> film.setGenres(genreStorage.findGenresByFilmId(film.getId())));
+        Map<Long, List<ru.yandex.practicum.filmorate.model.Genre>> genreMap =
+                genreStorage.findGenresForFilmIds(films.stream().map(Film::getId).toList());
+
+        films.forEach(film -> film.setGenres(genreMap.getOrDefault(film.getId(), List.of())));
+
         return films;
     }
 
@@ -111,22 +124,27 @@ public class FilmDbStorage implements FilmStorage {
                 null
         ), id);
 
-        // добавим жанры
-        films.forEach(film -> film.setGenres(genreStorage.findGenresByFilmId(film.getId())));
+        if (films.isEmpty()) return Optional.empty();
 
-        return films.stream().findFirst();
+        Film film = films.get(0);
+        film.setGenres(genreStorage.findGenresByFilmId(film.getId()));
+        return Optional.of(film);
     }
 
     @Override
     public void addLike(Long filmId, Long userId) {
-        String sql = "MERGE INTO film_likes (film_id, user_id) KEY (film_id, user_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, filmId, userId);
+        jdbcTemplate.update(
+                "MERGE INTO film_likes (film_id, user_id) KEY (film_id, user_id) VALUES (?, ?)",
+                filmId, userId
+        );
     }
 
     @Override
     public void removeLike(Long filmId, Long userId) {
-        String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-        jdbcTemplate.update(sql, filmId, userId);
+        jdbcTemplate.update(
+                "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?",
+                filmId, userId
+        );
     }
 
     @Override
@@ -139,7 +157,7 @@ public class FilmDbStorage implements FilmStorage {
             GROUP BY f.id
             ORDER BY COUNT(fl.user_id) DESC
             LIMIT ?
-            """;
+        """;
 
         List<Film> films = jdbcTemplate.query(sql, (rs, rowNum) -> new Film(
                 rs.getLong("id"),
@@ -152,7 +170,11 @@ public class FilmDbStorage implements FilmStorage {
                 null
         ), count);
 
-        films.forEach(film -> film.setGenres(genreStorage.findGenresByFilmId(film.getId())));
+        Map<Long, List<ru.yandex.practicum.filmorate.model.Genre>> genreMap =
+                genreStorage.findGenresForFilmIds(films.stream().map(Film::getId).toList());
+
+        films.forEach(film -> film.setGenres(genreMap.getOrDefault(film.getId(), List.of())));
+
         return films;
     }
 }

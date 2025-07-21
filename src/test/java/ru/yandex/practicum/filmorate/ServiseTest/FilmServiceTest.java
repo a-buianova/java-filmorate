@@ -7,8 +7,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.GenreService;
-import ru.yandex.practicum.filmorate.service.MpaService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
@@ -35,10 +33,7 @@ class FilmServiceTest {
         MpaStorage mpaStorage = new InMemoryMpaStorage();
         GenreStorage genreStorage = new InMemoryGenreStorage();
 
-        MpaService mpaService = new MpaService(mpaStorage);
-        GenreService genreService = new GenreService(genreStorage);
-
-        filmService = new FilmService(filmStorage, userStorage, mpaService, genreService);
+        filmService = new FilmService(filmStorage, userStorage, mpaStorage, genreStorage);
     }
 
     @Test
