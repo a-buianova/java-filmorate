@@ -1,32 +1,58 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.validator.FilmReleaseDate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Film {
 
     private Long id;
 
-    @NotBlank(message = "Название фильма не может быть пустым")
+    @NotBlank(message = "Название не может быть пустым")
     private String name;
 
-    @Size(max = 200, message = "Описание фильма не должно превышать 200 символов")
+    @Size(max = 200, message = "Описание не может быть длиннее 200 символов")
     private String description;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @NotNull(message = "Дата релиза не может быть пустой")
     @FilmReleaseDate
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate releaseDate;
 
-    @Positive(message = "Продолжительность фильма должна быть положительной")
+    @Positive(message = "Продолжительность должна быть положительной")
     private int duration;
 
-    private Set<Long> likes = new HashSet<>();
+    @Valid
+    @NotNull(message = "MPA рейтинг обязателен")
+    private RatingMpa mpa;
+
+    private List<Genre> genres = new ArrayList<>();
+
+    private Set<Long> likes = new LinkedHashSet<>();
+
+    public void addLike(Long userId) {
+        likes.add(userId);
+    }
+
+    public void removeLike(Long userId) {
+        likes.remove(userId);
+    }
 }

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.ValidationTest;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.RatingMpa;
 
 import java.time.LocalDate;
 
@@ -77,6 +78,14 @@ class FilmValidationTest {
     }
 
     @Test
+    @DisplayName("MPA null — не проходит валидацию")
+    void nullMpaFails() {
+        Film film = validFilm();
+        film.setMpa(null);
+        assertThat(validator.validate(film)).isNotEmpty();
+    }
+
+    @Test
     @DisplayName("Корректный фильм проходит валидацию")
     void validFilmOk() {
         Film film = validFilm();
@@ -89,6 +98,31 @@ class FilmValidationTest {
         film.setDescription("Neo chooses pill");
         film.setReleaseDate(LocalDate.of(1999, 3, 31));
         film.setDuration(136);
+        film.setMpa(new RatingMpa(1, "G"));
         return film;
+    }
+
+    @Test
+    @DisplayName("Описание null — проходит валидацию (если допускается)")
+    void nullDescriptionOk() {
+        Film film = validFilm();
+        film.setDescription(null);
+        assertThat(validator.validate(film)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Название из одного символа проходит валидацию")
+    void nameOneCharOk() {
+        Film film = validFilm();
+        film.setName("A");
+        assertThat(validator.validate(film)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Продолжительность 1 — проходит валидацию")
+    void durationOneOk() {
+        Film film = validFilm();
+        film.setDuration(1);
+        assertThat(validator.validate(film)).isEmpty();
     }
 }
